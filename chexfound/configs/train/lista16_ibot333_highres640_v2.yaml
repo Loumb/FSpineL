@@ -1,0 +1,102 @@
+# chexfound/configs/train/lista16_ibot333_highres640_v2.yaml
+#
+# V2 修改：l1_sparsity_weight 从 0.01 提升到 0.1
+# 让 L1 稀疏正则占总 loss 的 1-5%，与重建损失形成有意义的 trade-off
+# 其余配置与原版完全一致
+# ============================================================
+
+MODEL:
+  WEIGHTS: ''
+
+dino:
+  loss_weight: 1.0
+  head_n_prototypes: 131072
+  head_bottleneck_dim: 384
+  head_hidden_dim: 2048
+  head_nlayers: 3
+  koleo_loss_weight: 0.0
+
+ibot:
+  loss_weight: 0.0
+  separate_head: false
+  head_n_prototypes: 131072
+  sam_ratio: 0.6
+  sam_warmup_ratio: 0.7
+  mask_ratio_min_max: [0.1, 0.5]
+  mask_sample_probability: 0.5
+
+ddn:
+  # ── 损失权重 ──────────────────────────────────────────────────
+  teacher_recon_weight: 1.0
+  student_recon_weight: 0.3
+  align_weight: 1.0
+
+  # ── 边缘感知损失 ─────────────────────────────────────────────
+  edge_loss_weight: 0.05
+
+  # ── 多尺度辅助重建 ──────────────────────────────────────────
+  use_multiscale_recon: true
+  aux_recon_320_weight: 0.3
+  aux_recon_160_weight: 0.1
+
+  # ── 解剖结构加权重建 (SAM-guided) ───────────────────────────
+  use_anatomy_weight: true
+  anatomy_weight_vertebra: 2.0
+  anatomy_weight_disc: 3.0
+  anatomy_weight_canal: 1.5
+
+  # ── 教师 warmup ─────────────────────────────────────────────
+  warmup_teacher_recon_epochs: 5
+
+  # ── V2 稀疏度正则 (L1 权重大幅提升) ──────────────────────────
+  l1_sparsity_weight: 0.1    # V2: 0.01 → 0.1，让稀疏正则真正生效
+  l2_sparsity_weight: 0.01   # 保持不变，平滑收缩
+
+train:
+  batch_size_per_gpu: 1
+  dataset_path: ImageNet22k
+  centering: sinkhorn_knopp
+  OFFICIAL_EPOCH_LENGTH: 2500
+  sam_masks_dir: ""
+  sam_images_dir: ""
+  skip_missing_sam: true
+
+student:
+  arch: ddn
+  patch_size: 16
+  embed_dim: 512
+  in_chans: 1
+  num_filters: 32
+  num_iter: 3
+  num_register_tokens: 0
+  pretrained_weights: ''
+
+teacher:
+  momentum_teacher: 0.994
+  final_momentum_teacher: 1.0
+  teacher_temp: 0.04
+  warmup_teacher_temp: 0.04
+  warmup_teacher_temp_epochs: 0
+
+optim:
+  epochs: 100
+  weight_decay: 0.04
+  weight_decay_end: 0.2
+  lr: 1e-04
+  min_lr: 1e-06
+  warmup_epochs: 10
+  layerwise_decay: 1.0
+  patch_embed_lr_mult: 0.2
+  clip_grad: 3.0
+  freeze_last_layer_epochs: 1
+  adamw_beta1: 0.9
+  adamw_beta2: 0.999
+
+crops:
+  global_crops_size: 640
+  global_crops_scale: [1.0, 1.0]
+  local_crops_scale: [0.05, 0.4]
+  local_crops_number: 0
+
+evaluation:
+  eval_period_iterations: 5000

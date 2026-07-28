@@ -1,0 +1,24 @@
+name: dinov2-extras
+channels:
+  - defaults
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+  - pytorch
+  - nvidia
+  - xformers
+  - conda-forge
+dependencies:
+  - python=3.9
+  - pytorch=2.0.0
+  - torchvision=0.15.0
+  - nvidia::cudatoolkit=11.7  # 修正后的CUDA工具包
+  - omegaconf
+  - torchmetrics=0.10.3
+  - fvcore
+  - iopath
+  - pip
+  - pip:
+    - git+https://github.com/facebookincubator/submitit
+    - mmcv-full==1.5.0
+    - mmsegmentation==0.27.0

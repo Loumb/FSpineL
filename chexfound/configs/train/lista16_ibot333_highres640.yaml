@@ -1,0 +1,147 @@
+﻿# chexfound/configs/train/lista16_ibot333_highres640.yaml
+#
+# ============================================================
+# 改动说明（SAM 引导混合掩码版，在稀疏系数对齐版基础上新增）：
+#
+#   train:
+#     sam_masks_dir: ""    ← 新增：预计算 SAM 分割图目录
+#                            空字符串 / 省略 → 原始随机掩码行为（向后兼容）
+#
+#   ibot:
+#     sam_ratio       : 0.6  ← 新增：SAM 策略迭代步占比（60%）
+#     sam_warmup_ratio: 0.7  ← 新增：动态难度调整阶段占比（前 70% epochs）
+#
+#   其余字段均与原稀疏系数对齐版完全相同
+# ============================================================
+
+MODEL:
+  WEIGHTS: ''
+
+dino:
+  # loss_weight 在稀疏系数版中作为 mse_loss_weight 使用
+  # 若设为 0 则 ssl_meta_arch 自动回退至 1.0
+  loss_weight: 1.0
+  head_n_prototypes: 131072     # 保留兼容字段，实际不创建 head
+  head_bottleneck_dim: 384
+  head_hidden_dim: 2048
+  head_nlayers: 3
+  koleo_loss_weight: 0.0
+
+ibot:
+  # 稀疏系数版不使用 iBOT patch loss
+  loss_weight: 0.0
+  separate_head: false
+  head_n_prototypes: 131072
+
+  # ── SAM 引导混合掩码参数（新增）────────────────────────────────────────────
+  # sam_ratio: 每个迭代步使用 SAM 结构感知掩码的概率（60%）
+  # 剩余 40% 使用原生随机块掩码（避免模型学习捷径）
+  sam_ratio: 0.6
+
+  # sam_warmup_ratio: 动态难度调整阶段占总 epoch 数的比例
+  # 前 70% epoch 线性从初始概率升至目标概率，之后固定目标概率
+  # 初始: disc=0.30, vertebra=0.20  →  目标: disc=0.70, vertebra=0.50
+  sam_warmup_ratio: 0.7
+
+  # 以下为 collate 侧随机块掩码参数（sam_ratio=40% 分支 + 兼容回退使用）
+  mask_ratio_min_max: [0.1, 0.5]
+  mask_sample_probability: 0.5
+
+ddn:
+  # ── 损失权重 ──────────────────────────────────────────────────
+  teacher_recon_weight: 1.0
+  student_recon_weight: 0.3
+  align_weight: 1.0
+
+  # ── 边缘感知损失 ─────────────────────────────────────────────
+  edge_loss_weight: 0.05
+
+  # ── 多尺度辅助重建 ──────────────────────────────────────────
+  use_multiscale_recon: true
+  aux_recon_320_weight: 0.3
+  aux_recon_160_weight: 0.1
+
+  # ── 解剖结构加权重建 (SAM-guided) ───────────────────────────
+  use_anatomy_weight: true
+  anatomy_weight_vertebra: 2.0
+  anatomy_weight_disc: 3.0
+  anatomy_weight_canal: 1.5
+
+  # ── 教师 warmup ─────────────────────────────────────────────
+  warmup_teacher_recon_epochs: 5
+
+  # ── 稀疏度正则 (L1 + L2 on gamma) ────────────────────────────
+  l1_sparsity_weight: 0.01
+  l2_sparsity_weight: 0.01
+
+train:
+  # --- Multi-GPU batch settings ---
+  # batch_size_per_gpu: each GPU processes this many samples per iteration
+  # effective batch size = batch_size_per_gpu * NUM_GPUS
+  # Example (8 GPUs): effective batch = 1 * 8 = 8
+  batch_size_per_gpu: 1
+  # num_workers: DataLoader worker processes per GPU
+  # Recommend 4-8 per GPU for multi-GPU (e.g. 40 total for 8 GPUs)
+  # For single-GPU: can be higher (e.g. 8-16)
+  num_workers: 8
+  dataset_path: ImageNet22k           # 实际使用腰椎数据集路径
+  centering: sinkhorn_knopp           # 保留字段兼容性，实际不使用
+  OFFICIAL_EPOCH_LENGTH: 2500
+
+  # ── SAM 掩码目录（新增，可选）────────────────────────────────────────────
+  # 预计算 SAM 分割图的存储目录，文件名与图像文件名（去扩展名）对应
+  # 文件格式：numpy .npy，dtype=int32，shape=[H,W]，值域 {0,1,2,3}
+  #   0=背景, 1=椎体, 2=椎间盘, 3=椎管/椎弓根
+  # 留空 "" 或省略 → 自动回退为原生随机块掩码（向后兼容）
+  sam_masks_dir: ""   # 例: "/data/lumbar/sam_segs"
+  sam_images_dir: ""  # 生成 SAM 时使用的长文件名原图目录
+  # true: 训练前过滤找不到对应 SAM 文件的原图
+  skip_missing_sam: true
+
+student:
+  arch: ddn
+  patch_size: 16
+  embed_dim: 512
+  in_chans: 1                     # 医学影像单通道灰度图
+  num_filters: 32
+  num_iter: 3
+  num_register_tokens: 0
+  pretrained_weights: ''
+
+teacher:
+  momentum_teacher: 0.994         # 保留字段（EMA 已禁用）
+  final_momentum_teacher: 1.0
+  teacher_temp: 0.04
+  warmup_teacher_temp: 0.04
+  warmup_teacher_temp_epochs: 0
+
+optim:
+  # --- LR scaling options ---
+  # scaling_rule: sqrt_wrt_1024 -> auto-scale LR sqrt(effective_batch/1024)
+  # scaling_rule: none          -> use lr as-is, no scaling
+  # When scaling_rule=none with 8 GPUs, batch=1: lr stays at 1e-4
+  # When scaling_rule=sqrt_wrt_1024, 8 GPUs, batch=1: lr = 1e-4 * sqrt(8/1024)
+  scaling_rule: sqrt_wrt_1024
+  # base_lr: reference LR for batch size 1024 (used when lr=0 in config)
+  base_lr: 0.001
+  epochs: 100
+  weight_decay: 0.04
+  weight_decay_end: 0.2
+  lr: 1e-04
+  min_lr: 1e-06
+  warmup_epochs: 10
+  layerwise_decay: 1.0
+  patch_embed_lr_mult: 0.2
+  clip_grad: 3.0
+  freeze_last_layer_epochs: 1
+  adamw_beta1: 0.9
+  adamw_beta2: 0.999
+
+crops:
+  global_crops_size: 640
+  global_crops_scale: [1.0, 1.0]
+  local_crops_scale: [0.05, 0.4]
+  local_crops_number: 0             # 局部裁剪由 forward_backward 在线生成
+
+evaluation:
+  eval_period_iterations: 5000

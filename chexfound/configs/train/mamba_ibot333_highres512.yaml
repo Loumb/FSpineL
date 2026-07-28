@@ -1,0 +1,58 @@
+MODEL:
+  WEIGHTS: ''
+
+dino:
+  head_n_prototypes: 131072
+  head_bottleneck_dim: 384
+
+ibot:
+  loss_weight: 3.0
+  separate_head: true
+  head_n_prototypes: 131072
+
+train:
+  batch_size_per_gpu: 8
+  dataset_path: ImageNet22k
+  centering: sinkhorn_knopp
+  OFFICIAL_EPOCH_LENGTH: 2500
+
+# ---------------- Student ----------------
+student:
+  arch: mamba_base                # ✔ 命中 mamba 分支
+  img_size: 224              # ✔ 必须
+  patch_size: 16
+  in_chans: 3
+  embed_dim: 768
+  depth: 24                  # ✔ 关键：必须加
+  d_state: 16
+  drop_path_rate: 0.4
+  num_register_tokens: 4     # ✔ 仅当你在 Mamba 中显式支持
+  num_global_crops: 2
+
+# ---------------- Teacher ----------------
+teacher:
+  arch: mamba_base                # ✔ 必须与 student backbone 同类型
+  img_size: 224
+  in_chans: 3
+  embed_dim: 768
+  depth: 24                  # ✔ 必须与 student 对齐
+  d_state: 16
+  num_global_crops: 2
+  momentum_teacher: 0.994
+
+# ---------------- Optim ----------------
+optim:
+  epochs: 100
+  weight_decay_end: 0.2
+  base_lr: 2.0e-04
+  warmup_epochs: 10
+  layerwise_decay: 1.0
+
+# ---------------- Crops ----------------
+crops:
+  global_crops_size: 224
+  local_crops_size: 96
+  num_global_crops: 2
+
+evaluation:
+  eval_period_iterations: 1250

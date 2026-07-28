@@ -1,0 +1,54 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Python and IDE
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.idea/
+.vscode/
+.claude/
+.codex/
+.agents/
+
+# Medical data and metadata
+data/
+dataset/
+datasets/
+EXTRA*/
+*.dcm
+*.dicom
+*.nii
+*.nii.gz
+*.nrrd
+*.mha
+*.mhd
+*.h5
+*.hdf5
+*.csv
+*.xlsx
+
+# Weights, features, checkpoints and outputs
+checkpoints/
+outputs/
+artifacts/
+logs/
+vis/
+deliverables/
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.safetensors
+*.npy
+*.npz
+*.log
+nohup.out
+
+# Notebook outputs
+.ipynb_checkpoints/
