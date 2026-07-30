@@ -216,7 +216,7 @@ def run_segmentation_probe(
         _candidates = [
             os.path.join(_probe_dir, "..", "..", "..", "D3_DST_SEG"),                # 从 SSL 项目内
             os.path.join(_probe_dir, "..", "..", "..", "..", "D3_DST_SEG"),          # 备选
-            os.path.join(os.path.expanduser("~"), "projects", "D3_SEG_15shot_ddp"),
+            os.path.join(os.path.expanduser("~"), "projects", "DDN_UNet_SEG"),
         ]
         _seg_path = os.environ.get("D3_DST_SEG_PATH", "")
         if _seg_path:
