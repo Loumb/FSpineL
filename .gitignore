@@ -20,6 +20,10 @@ __pycache__/
 data/
 dataset/
 datasets/
+private/
+patients/
+cases/
+masks/
 EXTRA*/
 *.dcm
 *.dicom
@@ -35,6 +39,7 @@ EXTRA*/
 
 # Weights, features, checkpoints and outputs
 checkpoints/
+weights/
 outputs/
 artifacts/
 logs/
