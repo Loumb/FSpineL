@@ -1,4 +1,4 @@
-# FewSpineL: Optimization-Inspired Self-Supervised Pretraining for Lumbar MRI
+# FSpineL: Optimization-Inspired Self-Supervised Pretraining for Lumbar MRI
 
 [中文](#中文说明) | [English](#english-summary)
 
