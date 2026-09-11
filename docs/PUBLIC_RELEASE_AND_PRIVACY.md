@@ -13,29 +13,8 @@
 - 标签CSV、病例编号、医院信息和可关联患者的元数据。
 - SAM及自监督模型权重。
 - Checkpoint、Embedding、训练日志、可视化结果和实验输出。
-- 本机、服务器、共享盘、用户名及内网地址。
-- API Key、Token、私钥和真实`.env`文件。
-
-## 已执行的处理
-
-1. 从原始目录建立新的公开镜像，不直接发布原目录。
-2. 排除`outputs/`、`checkpoints/`、`EXTRA3/`、`vis/`、IDE配置和内部交付材料。
-3. 将绝对路径替换为CLI参数、环境变量或相对路径。
-4. 保留上游CheXFound的MIT许可证和署名。
-5. 使用`.gitignore`阻止医学数据、权重、日志和密钥进入提交。
-
-## 发布前检查
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/public_release_check.ps1
-```
-
-检查必须满足：
-
-- 没有医学图像和患者元数据；
-- 没有权重或大文件；
-- 没有真实密钥；
-- 没有本机或内部服务器绝对路径；
+- 医学图像和患者元数据；
+- 权重或大文件；
 - 没有未说明来源的第三方代码。
 
 ## 使用边界
