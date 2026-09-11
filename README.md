@@ -14,12 +14,12 @@ Repository: https://github.com/g809180109-code/FSpineL
 ### 项目定位
 
 - 任务：无标注腰椎 MRI 自监督预训练与下游迁移。
-- 数据规模：项目内部使用四中心约 50 万张脱敏腰椎 MRI 切片。
+- 数据规模：项目内部使用四中心约 100 万张脱敏腰椎 MRI 切片。
 - 训练：PyTorch、FP16、FSDP、单机多卡 `torchrun`。
-- 论文：`Optimization-Inspired Self-Supervised Learning for Few-Shot Lumbar Medical Image Analysis`，投稿中。
+- 论文：`Optimization-Inspired Self-Supervised Learning for Multicenter FewShot Lumbar Clinical MR Segmentation and Object Detection`，The Spine Journal，SCI 一区，第二作者，返修中。
 - 公开范围：仅源代码、配置和启动脚本，不包含医学影像、标签、患者元数据、模型权重、训练日志或内部服务器路径。
 
-本仓库是研究代码，不是医疗器械，也不能用于临床诊断。
+本仓库是研究代码，不是医疗器械。
 
 ## 核心方法
 
@@ -99,10 +99,8 @@ bash scripts/run_train_ddn_multi_gpu.sh \
 
 ## 隐私与安全
 
-- 不要提交 DICOM、NIfTI、NRRD、PNG 病例图像或患者标签表。
-- 不要提交 `.pth`、`.pt`、`.ckpt`、`.onnx` 或大规模 `.npy` 元数据。
-- 不要在代码中写入医院名、患者编号、服务器地址、用户名或本机绝对路径。
-- 提交前运行 `scripts/public_release_check.ps1`。
+- 不包含 DICOM、NIfTI、NRRD、PNG 病例图像或患者标签表。
+- 不包含 `.pth`、`.pt`、`.ckpt`、`.onnx` 或大规模 `.npy` 元数据。
 
 详细范围见 [公开发布与脱敏说明](docs/PUBLIC_RELEASE_AND_PRIVACY.md)。
 
